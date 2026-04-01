@@ -1,0 +1,115 @@
+services:
+  telemt_1:
+    build:
+      context: https://github.com/telemt/telemt.git#main
+      dockerfile: Dockerfile
+      target: debug
+      args:
+        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
+    container_name: telemt_1
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "443:443"
+    volumes:
+      - ./telemt/configs/config_1.toml:/app/config.toml:ro
+      - ./telemt/tlsfront/1:/app/tlsfront
+
+  telemt_2:
+    build:
+      context: https://github.com/telemt/telemt.git#main
+      dockerfile: Dockerfile
+      target: debug
+      args:
+        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
+    container_name: telemt_2
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./telemt/configs/config_2.toml:/app/config.toml:ro
+      - ./telemt/tlsfront/2:/app/tlsfront
+
+  telemt_3:
+    build:
+      context: https://github.com/telemt/telemt.git#main
+      dockerfile: Dockerfile
+      target: debug
+      args:
+        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
+    container_name: telemt_3
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "2053:2053"
+    volumes:
+      - ./telemt/configs/config_3.toml:/app/config.toml:ro
+      - ./telemt/tlsfront/3:/app/tlsfront
+
+  telemt_4:
+    build:
+      context: https://github.com/telemt/telemt.git#main
+      dockerfile: Dockerfile
+      target: debug
+      args:
+        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
+    container_name: telemt_4
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "2083:2083"
+    volumes:
+      - ./telemt/configs/config_4.toml:/app/config.toml:ro
+      - ./telemt/tlsfront/4:/app/tlsfront
+
+  telemt_5:
+    build:
+      context: https://github.com/telemt/telemt.git#main
+      dockerfile: Dockerfile
+      target: debug
+      args:
+        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
+    container_name: telemt_5
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "2096:2096"
+    volumes:
+      - ./telemt/configs/config_5.toml:/app/config.toml:ro
+      - ./telemt/tlsfront/5:/app/tlsfront
+
+  app:
+    build:
+      context: ./app
+    container_name: mtprotobot_app
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./data:/data
+      - ./telemt/configs:/configs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.ssh/vps2_ssh_key:/run/secrets/vps2_ssh_key:ro
+    depends_on:
+      - telemt_1
+      - telemt_2
+      - telemt_3
+      - telemt_4
+      - telemt_5
+

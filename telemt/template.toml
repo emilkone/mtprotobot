@@ -1,0 +1,48 @@
+### telemt config template for MTProxy slots
+#
+# This file is used by scripts/init.sh to generate per-slot configs
+# into telemt/configs/config_{slot}.toml
+#
+# The placeholder tokens are:
+#   __PORT__        - port number (e.g. 443)
+#   __TLS_DOMAIN__  - SNI domain for FakeTLS masking (e.g. google.com)
+#   __USERNAME__    - username label shown in links (e.g. slot1)
+#   __SECRET32__    - 32 hex chars secret (no ee prefix here; telemt expects 32 hex)
+#
+# Notes:
+# - telemt in TLS mode produces "ee<hex(tls_domain)><secret32>" links.
+# - We keep api enabled only for local debugging; it is NOT required.
+#
+
+[general]
+use_middle_proxy = true
+log_level = "normal"
+
+[general.modes]
+classic = false
+secure = false
+tls = true
+
+[general.links]
+show = "*"
+
+[server]
+port = __PORT__
+
+[[server.listeners]]
+ip = "0.0.0.0"
+
+[censorship]
+tls_domain = "__TLS_DOMAIN__"
+mask = true
+tls_emulation = true
+tls_front_dir = "tlsfront"
+
+[server.api]
+enabled = true
+listen = "0.0.0.0:9091"
+whitelist = ["127.0.0.0/8"]
+
+[access.users]
+__USERNAME__ = "__SECRET32__"
+
