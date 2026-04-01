@@ -13,7 +13,8 @@ services:
         soft: 65536
         hard: 65536
     ports:
-      - "443:443"
+      # avoid 443 if xray/VLESS uses it on the same host (default telemt port in config: 4443)
+      - "4443:4443"
     volumes:
       - ./telemt/configs/config_1.toml:/app/config.toml:ro
       - ./telemt/tlsfront/1:/app/tlsfront

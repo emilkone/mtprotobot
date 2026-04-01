@@ -7,7 +7,17 @@ TEMPLATE="${ROOT_DIR}/telemt/template.toml"
 OUT_DIR="${ROOT_DIR}/telemt/configs"
 DATA_DIR="${ROOT_DIR}/data"
 
-PORTS_DEFAULT=("443" "8443" "2053" "2083" "2096")
+# По умолчанию без :443 — на одном VPS часто занят xray/VLESS (Reality).
+# При необходимости задай свой список: TELEMT_PORTS="8443,2053,2083,2096,4443"
+if [ -n "${TELEMT_PORTS:-}" ]; then
+  IFS=',' read -r -a PORTS_DEFAULT <<< "${TELEMT_PORTS// /}"
+else
+  PORTS_DEFAULT=("4443" "8443" "2053" "2083" "2096")
+fi
+if [ "${#PORTS_DEFAULT[@]}" -ne 5 ]; then
+  echo "TELEMT_PORTS must contain exactly 5 comma-separated ports (got ${#PORTS_DEFAULT[@]})" >&2
+  exit 1
+fi
 
 TLS_DOMAIN="${TLS_DOMAIN:-google.com}"
 VPS1_PUBLIC_IP="${VPS1_PUBLIC_IP:-}"
@@ -23,6 +33,7 @@ Usage:
 
 Environment variables:
   TLS_DOMAIN          SNI domain for FakeTLS masking (default: google.com)
+  TELEMT_PORTS        Comma-separated 5 ports for slots 1..5 (default avoids :443 for xray)
   VPS1_PUBLIC_IP      Public IPv4/hostname of VPS1 (optional; used to precompute links)
 
   VPS2_HOST           RU VPS host (optional; used by scripts to deploy vps2/checker.py)
