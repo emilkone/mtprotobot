@@ -26,7 +26,9 @@ async def run_hourly_check(
     vps2_user: str,
     vps2_ssh_key_path: str | None,
     vps2_remote_checker_path: str = "/home/checker/checker.py",
-    configs_dir: str,
+    mtproto_secrets_dir: str,
+    compose_file: str,
+    compose_project_dir: str,
     timeout_s: float = 5.0,
 ) -> CheckSummary:
     slots = state.load()
@@ -77,7 +79,11 @@ async def run_hourly_check(
             continue
 
         new_s = regenerate_slot(
-            slot=s, vps1_public_ip=vps1_public_ip, configs_dir=configs_dir
+            slot=s,
+            vps1_public_ip=vps1_public_ip,
+            mtproto_secrets_dir=mtproto_secrets_dir,
+            compose_file=compose_file,
+            compose_project_dir=compose_project_dir,
         )
         regenerated.append(s.slot)
         new_slots.append(new_s)

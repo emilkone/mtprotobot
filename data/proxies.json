@@ -1,0 +1,7 @@
+[
+  {"slot": 1, "port": 4443, "secret32": "ce4c758f4bb8a3960be94de435625c01", "tls_domain": "google.com", "link": ""},
+  {"slot": 2, "port": 8443, "secret32": "5541690ec66dd970547fcc01607b1972", "tls_domain": "google.com", "link": ""},
+  {"slot": 3, "port": 2053, "secret32": "c5dad4069975db46ee6b304eeb2590a6", "tls_domain": "google.com", "link": ""},
+  {"slot": 4, "port": 2083, "secret32": "5a506ab760eb6820e346cd463bc48042", "tls_domain": "google.com", "link": ""},
+  {"slot": 5, "port": 2096, "secret32": "16be771419577f628769f4065a73832f", "tls_domain": "google.com", "link": ""}
+]

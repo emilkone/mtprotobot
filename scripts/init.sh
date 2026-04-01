@@ -3,19 +3,20 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-TEMPLATE="${ROOT_DIR}/telemt/template.toml"
-OUT_DIR="${ROOT_DIR}/telemt/configs"
+OUT_ENV_DIR="${ROOT_DIR}/data/mtproto"
 DATA_DIR="${ROOT_DIR}/data"
 
 # По умолчанию без :443 — на одном VPS часто занят xray/VLESS (Reality).
-# При необходимости задай свой список: TELEMT_PORTS="8443,2053,2083,2096,4443"
-if [ -n "${TELEMT_PORTS:-}" ]; then
+# При необходимости: MTPROTO_PORTS="8443,2053,2083,2096,4443" (или TELEMT_PORTS — алиас)
+if [ -n "${MTPROTO_PORTS:-}" ]; then
+  IFS=',' read -r -a PORTS_DEFAULT <<< "${MTPROTO_PORTS// /}"
+elif [ -n "${TELEMT_PORTS:-}" ]; then
   IFS=',' read -r -a PORTS_DEFAULT <<< "${TELEMT_PORTS// /}"
 else
   PORTS_DEFAULT=("4443" "8443" "2053" "2083" "2096")
 fi
 if [ "${#PORTS_DEFAULT[@]}" -ne 5 ]; then
-  echo "TELEMT_PORTS must contain exactly 5 comma-separated ports (got ${#PORTS_DEFAULT[@]})" >&2
+  echo "MTPROTO_PORTS must contain exactly 5 comma-separated ports (got ${#PORTS_DEFAULT[@]})" >&2
   exit 1
 fi
 
@@ -33,7 +34,7 @@ Usage:
 
 Environment variables:
   TLS_DOMAIN          SNI domain for FakeTLS masking (default: google.com)
-  TELEMT_PORTS        Comma-separated 5 ports for slots 1..5 (default avoids :443 for xray)
+  MTPROTO_PORTS       Comma-separated 5 host ports for slots 1..5 (mapped to container 443)
   VPS1_PUBLIC_IP      Public IPv4/hostname of VPS1 (optional; used to precompute links)
 
   VPS2_HOST           RU VPS host (optional; used by scripts to deploy vps2/checker.py)
@@ -41,9 +42,11 @@ Environment variables:
   VPS2_SSH_KEY        Path to SSH private key for RU VPS (optional; ssh-agent also works)
 
 This script:
-  - generates telemt/configs/config_1..5.toml with random secrets
+  - creates data/mtproto/slot_1..5.env with SECRET=ee<hex(domain)><secret32>
   - creates/updates data/proxies.json (initial state)
   - optionally deploys vps2/checker.py to VPS2 if VPS2_HOST is provided
+
+Legacy: TELEMT_PORTS is accepted as an alias for MTPROTO_PORTS.
 EOF
 }
 
@@ -59,11 +62,6 @@ PY
   fi
 }
 
-hex_of_ascii() {
-  # hex encode ASCII string (argument $1)
-  python3 -c 'import binascii, sys; print(binascii.hexlify(sys.argv[1].encode("ascii")).decode("ascii"))' "$1"
-}
-
 make_link() {
   local host="$1"
   local port="$2"
@@ -74,12 +72,18 @@ make_link() {
   printf "https://t.me/proxy?server=%s&port=%s&secret=ee%s%s" "${host}" "${port}" "${tls_hex}" "${secret32}"
 }
 
+write_slot_env() {
+  local path="$1"
+  local tls_domain="$2"
+  local secret32="$3"
+  local tls_hex full
+  tls_hex="$(TLS_DOMAIN="${tls_domain}" python3 -c 'import binascii, os; d=os.environ["TLS_DOMAIN"]; print(binascii.hexlify(d.encode("ascii")).decode("ascii"))')"
+  full="ee${tls_hex}${secret32}"
+  printf 'SECRET=%s\n' "${full}" > "${path}"
+}
+
 generate_configs() {
-  mkdir -p "${OUT_DIR}" "${DATA_DIR}"
-  if [ ! -f "${TEMPLATE}" ]; then
-    echo "Template not found: ${TEMPLATE}" >&2
-    exit 1
-  fi
+  mkdir -p "${OUT_ENV_DIR}" "${DATA_DIR}"
 
   local -a ports=("${PORTS_DEFAULT[@]}")
   local proxies_json="[\n"
@@ -87,17 +91,11 @@ generate_configs() {
   for i in "${!ports[@]}"; do
     local slot=$((i+1))
     local port="${ports[$i]}"
-    local username="slot${slot}"
     local secret32
     secret32="$(rand_hex_32)"
 
-    local out="${OUT_DIR}/config_${slot}.toml"
-    sed \
-      -e "s/__PORT__/${port}/g" \
-      -e "s/__TLS_DOMAIN__/${TLS_DOMAIN}/g" \
-      -e "s/__USERNAME__/${username}/g" \
-      -e "s/__SECRET32__/${secret32}/g" \
-      "${TEMPLATE}" > "${out}"
+    local out="${OUT_ENV_DIR}/slot_${slot}.env"
+    write_slot_env "${out}" "${TLS_DOMAIN}" "${secret32}"
 
     local link=""
     if [ -n "${VPS1_PUBLIC_IP}" ]; then
@@ -114,7 +112,7 @@ generate_configs() {
   proxies_json+="]\n"
 
   printf "%b" "${proxies_json}" > "${DATA_DIR}/proxies.json"
-  echo "Generated configs in ${OUT_DIR} and ${DATA_DIR}/proxies.json"
+  echo "Generated ${OUT_ENV_DIR}/slot_*.env and ${DATA_DIR}/proxies.json"
 }
 
 deploy_vps2_checker() {
@@ -144,4 +142,3 @@ main() {
 }
 
 main "$@"
-

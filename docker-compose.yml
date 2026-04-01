@@ -1,99 +1,69 @@
 services:
-  telemt_1:
-    build:
-      context: https://github.com/telemt/telemt.git#main
-      dockerfile: Dockerfile
-      target: debug
-      args:
-        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
-    container_name: telemt_1
+  mtproto_1:
+    image: telegrammessenger/proxy:latest
+    container_name: mtproto_1
     restart: unless-stopped
     ulimits:
       nofile:
         soft: 65536
         hard: 65536
     ports:
-      # avoid 443 if xray/VLESS uses it on the same host (default telemt port in config: 4443)
-      - "4443:4443"
-    volumes:
-      - ./telemt/configs/config_1.toml:/app/config.toml:ro
-      - ./telemt/tlsfront/1:/app/tlsfront
+      # container listens on 443; avoid host 443 if xray/VLESS uses it (default 4443)
+      - "4443:443"
+    env_file:
+      - ./data/mtproto/slot_1.env
 
-  telemt_2:
-    build:
-      context: https://github.com/telemt/telemt.git#main
-      dockerfile: Dockerfile
-      target: debug
-      args:
-        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
-    container_name: telemt_2
+  mtproto_2:
+    image: telegrammessenger/proxy:latest
+    container_name: mtproto_2
     restart: unless-stopped
     ulimits:
       nofile:
         soft: 65536
         hard: 65536
     ports:
-      - "8443:8443"
-    volumes:
-      - ./telemt/configs/config_2.toml:/app/config.toml:ro
-      - ./telemt/tlsfront/2:/app/tlsfront
+      - "8443:443"
+    env_file:
+      - ./data/mtproto/slot_2.env
 
-  telemt_3:
-    build:
-      context: https://github.com/telemt/telemt.git#main
-      dockerfile: Dockerfile
-      target: debug
-      args:
-        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
-    container_name: telemt_3
+  mtproto_3:
+    image: telegrammessenger/proxy:latest
+    container_name: mtproto_3
     restart: unless-stopped
     ulimits:
       nofile:
         soft: 65536
         hard: 65536
     ports:
-      - "2053:2053"
-    volumes:
-      - ./telemt/configs/config_3.toml:/app/config.toml:ro
-      - ./telemt/tlsfront/3:/app/tlsfront
+      - "2053:443"
+    env_file:
+      - ./data/mtproto/slot_3.env
 
-  telemt_4:
-    build:
-      context: https://github.com/telemt/telemt.git#main
-      dockerfile: Dockerfile
-      target: debug
-      args:
-        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
-    container_name: telemt_4
+  mtproto_4:
+    image: telegrammessenger/proxy:latest
+    container_name: mtproto_4
     restart: unless-stopped
     ulimits:
       nofile:
         soft: 65536
         hard: 65536
     ports:
-      - "2083:2083"
-    volumes:
-      - ./telemt/configs/config_4.toml:/app/config.toml:ro
-      - ./telemt/tlsfront/4:/app/tlsfront
+      - "2083:443"
+    env_file:
+      - ./data/mtproto/slot_4.env
 
-  telemt_5:
-    build:
-      context: https://github.com/telemt/telemt.git#main
-      dockerfile: Dockerfile
-      target: debug
-      args:
-        TELEMT_VERSION: ${TELEMT_VERSION:-latest}
-    container_name: telemt_5
+  mtproto_5:
+    image: telegrammessenger/proxy:latest
+    container_name: mtproto_5
     restart: unless-stopped
     ulimits:
       nofile:
         soft: 65536
         hard: 65536
     ports:
-      - "2096:2096"
-    volumes:
-      - ./telemt/configs/config_5.toml:/app/config.toml:ro
-      - ./telemt/tlsfront/5:/app/tlsfront
+      - "2096:443"
+    env_file:
+      - ./data/mtproto/slot_5.env
 
   app:
     build:
@@ -103,14 +73,13 @@ services:
     env_file:
       - ./.env
     volumes:
-      - ./data:/data
-      - ./telemt/configs:/configs
+      - ./docker-compose.yml:/workspace/docker-compose.yml:ro
+      - ./data:/workspace/data
       - /var/run/docker.sock:/var/run/docker.sock
       - ./.ssh/vps2_ssh_key:/run/secrets/vps2_ssh_key:ro
     depends_on:
-      - telemt_1
-      - telemt_2
-      - telemt_3
-      - telemt_4
-      - telemt_5
-
+      - mtproto_1
+      - mtproto_2
+      - mtproto_3
+      - mtproto_4
+      - mtproto_5

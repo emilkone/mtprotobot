@@ -16,6 +16,8 @@ class Settings(BaseSettings):
 
     check_interval_hours: int = 1
 
-    state_path: str = "/data/proxies.json"
-    configs_dir: str = "/configs"
+    state_path: str = "/workspace/data/proxies.json"
+    mtproto_secrets_dir: str = "/workspace/data/mtproto"
+    compose_file: str = "/workspace/docker-compose.yml"
+    compose_project_dir: str = "/workspace"
 

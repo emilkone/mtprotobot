@@ -17,7 +17,9 @@ def build_router(
     vps2_user: str,
     vps2_ssh_key_path: str | None,
     vps2_remote_checker_path: str,
-    configs_dir: str,
+    mtproto_secrets_dir: str,
+    compose_file: str,
+    compose_project_dir: str,
 ) -> Router:
     router = Router()
 
@@ -68,7 +70,9 @@ def build_router(
             vps2_user=vps2_user,
             vps2_ssh_key_path=vps2_ssh_key_path,
             vps2_remote_checker_path=vps2_remote_checker_path,
-            configs_dir=configs_dir,
+            mtproto_secrets_dir=mtproto_secrets_dir,
+            compose_file=compose_file,
+            compose_project_dir=compose_project_dir,
         )
         slots = sorted(st.load(), key=lambda s: s.slot)
         regenerated = (

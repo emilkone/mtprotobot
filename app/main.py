@@ -19,7 +19,9 @@ async def _scheduled_check(settings: Settings, bot: Bot) -> None:
         vps2_user=settings.vps2_user,
         vps2_ssh_key_path=settings.vps2_ssh_key_path,
         vps2_remote_checker_path=settings.vps2_remote_checker_path,
-        configs_dir=settings.configs_dir,
+        mtproto_secrets_dir=settings.mtproto_secrets_dir,
+        compose_file=settings.compose_file,
+        compose_project_dir=settings.compose_project_dir,
     )
     if summary.regenerated:
         slots = sorted(state.load(), key=lambda s: s.slot)
@@ -46,7 +48,9 @@ async def main() -> None:
             vps2_user=settings.vps2_user,
             vps2_ssh_key_path=settings.vps2_ssh_key_path,
             vps2_remote_checker_path=settings.vps2_remote_checker_path,
-            configs_dir=settings.configs_dir,
+            mtproto_secrets_dir=settings.mtproto_secrets_dir,
+            compose_file=settings.compose_file,
+            compose_project_dir=settings.compose_project_dir,
         )
     )
 
