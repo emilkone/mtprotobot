@@ -49,12 +49,8 @@ PY
 }
 
 hex_of_ascii() {
-  # hex encode ASCII string without newline
-  python3 - <<'PY'
-import sys, binascii
-s = sys.argv[1].encode("ascii")
-print(binascii.hexlify(s).decode("ascii"))
-PY
+  # hex encode ASCII string (argument $1)
+  python3 -c 'import binascii, sys; print(binascii.hexlify(sys.argv[1].encode("ascii")).decode("ascii"))' "$1"
 }
 
 make_link() {
@@ -63,11 +59,7 @@ make_link() {
   local tls_domain="$3"
   local secret32="$4"
   local tls_hex
-  tls_hex="$(python3 - <<PY
-import binascii, sys
-print(binascii.hexlify(sys.argv[1].encode("ascii")).decode("ascii"))
-PY
-"${tls_domain}")"
+  tls_hex="$(TLS_DOMAIN="${tls_domain}" python3 -c 'import binascii, os; d=os.environ["TLS_DOMAIN"]; print(binascii.hexlify(d.encode("ascii")).decode("ascii"))')"
   printf "https://t.me/proxy?server=%s&port=%s&secret=ee%s%s" "${host}" "${port}" "${tls_hex}" "${secret32}"
 }
 
