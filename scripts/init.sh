@@ -42,7 +42,7 @@ Environment variables:
   VPS2_SSH_KEY        Path to SSH private key for RU VPS (optional; ssh-agent also works)
 
 This script:
-  - creates data/mtproto/slot_1..5.env with SECRET=ee<hex(domain)><secret32>
+  - creates data/mtproto/slot_1..5.env with SECRET=ee<secret32><hex(domain)>
   - creates/updates data/proxies.json (initial state)
   - optionally deploys vps2/checker.py to VPS2 if VPS2_HOST is provided
 
@@ -69,7 +69,8 @@ make_link() {
   local secret32="$4"
   local tls_hex
   tls_hex="$(TLS_DOMAIN="${tls_domain}" python3 -c 'import binascii, os; d=os.environ["TLS_DOMAIN"]; print(binascii.hexlify(d.encode("ascii")).decode("ascii"))')"
-  printf "https://t.me/proxy?server=%s&port=%s&secret=ee%s%s" "${host}" "${port}" "${tls_hex}" "${secret32}"
+  # ee + secret32 + hex(domain) — порядок как у официального MTProxy / t.me/proxy
+  printf "https://t.me/proxy?server=%s&port=%s&secret=ee%s%s" "${host}" "${port}" "${secret32}" "${tls_hex}"
 }
 
 write_slot_env() {
@@ -78,7 +79,7 @@ write_slot_env() {
   local secret32="$3"
   local tls_hex full
   tls_hex="$(TLS_DOMAIN="${tls_domain}" python3 -c 'import binascii, os; d=os.environ["TLS_DOMAIN"]; print(binascii.hexlify(d.encode("ascii")).decode("ascii"))')"
-  full="ee${tls_hex}${secret32}"
+  full="ee${secret32}${tls_hex}"
   printf 'SECRET=%s\n' "${full}" > "${path}"
 }
 

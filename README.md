@@ -2,7 +2,7 @@
 
 Цель: держать 5 MTProxy на VPS1 (non-RU), проверять доступность из RU через VPS2, и автоматически ротировать упавшие слоты с уведомлением в Telegram.
 
-Прокси: официальный образ [telegrammessenger/proxy](https://hub.docker.com/r/telegrammessenger/proxy) (Fake TLS через префикс `ee` + hex(SNI) + 32 hex в `SECRET`).
+Прокси: официальный образ [telegrammessenger/proxy](https://hub.docker.com/r/telegrammessenger/proxy). Для Fake TLS клиентский секрет в формате `ee`: **`ee` + 32 hex (ключ) + hex(SNI-домена)** — так же собирается `SECRET` в `data/mtproto/slot_N.env` и параметр `secret` в ссылке.
 
 ## Компоненты
 

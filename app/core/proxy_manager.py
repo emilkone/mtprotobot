@@ -11,7 +11,8 @@ def tls_domain_to_hex(tls_domain: str) -> str:
 
 
 def build_full_secret(tls_domain: str, secret32: str) -> str:
-    return f"ee{tls_domain_to_hex(tls_domain)}{secret32}"
+    # MTProxy "ee" / Fake-TLS: ee + 16-byte secret (32 hex) + ASCII domain in hex (see Telegram MTProxy docs)
+    return f"ee{secret32}{tls_domain_to_hex(tls_domain)}"
 
 
 def build_tg_link(host: str, port: int, tls_domain: str, secret32: str) -> str:
